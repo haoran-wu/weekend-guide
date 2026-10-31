@@ -348,10 +348,81 @@ function viewTeam(){
     <div class="split">${WEATHER[S.day].rain&&!win.a.in?'⚠️ '+WEATHER[S.day].name+'有雨，户外活动可能取消':'✅ 天气合适'}${win.a.book?' · ⏰ 记得提前预约':''}</div>
     <div class="btns"><button class="btn pri" onclick="openCheckin(${win.a.id},true)">到达后一键打卡</button><button class="btn" onclick="leaveTeam()">解散小队</button></div></div>
     ${planBCard(win.a)}`:''}
-    ${!WEATHER[S.day].rain&&win&&!win.a.in?'<div class="muted" style="font-size:12px;margin-bottom:12px">💡 切到顶部「周日🌧️」，看看下雨时小队会收到什么提醒</div>':''}`;
+    ${!WEATHER[S.day].rain&&win&&!win.a.in?'<div class="muted" style="font-size:12px;margin-bottom:12px">💡 切到顶部「周日🌧️」，看看下雨时小队会收到什么提醒</div>':''}
+  ${ledger()}`;
+}
+// ---------- 小队账本 ----------
+const money=x=>'¥'+(Math.round(x*100)/100).toString();
+function balances(T){
+  const n=T.members.length,paid=Array(n).fill(0),owe=Array(n).fill(0);
+  (T.expenses||[]).forEach(e=>{const ps=e.among.filter(i=>i<n);if(!ps.length)return;paid[e.payer]+=e.amt;ps.forEach(i=>owe[i]+=e.amt/ps.length)});
+  return {paid,owe,net:paid.map((p,i)=>Math.round((p-owe[i])*100)/100)};
+}
+function settle(net){
+  const cr=[],db=[],out=[];
+  net.forEach((v,i)=>{if(v>0.005)cr.push([i,v]);else if(v<-0.005)db.push([i,-v])});
+  cr.sort((a,b)=>b[1]-a[1]);db.sort((a,b)=>b[1]-a[1]);
+  let i=0,j=0;
+  while(i<db.length&&j<cr.length){const x=Math.min(db[i][1],cr[j][1]);out.push([db[i][0],cr[j][0],Math.round(x*100)/100]);
+    db[i][1]-=x;cr[j][1]-=x;if(db[i][1]<0.005)i++;if(cr[j][1]<0.005)j++}
+  return out;
+}
+function ledger(){
+  const T=S.team,E=T.expenses||[],M=T.members;
+  const av=i=>`<span class="av" style="background:${COLORS[i%6]};width:20px;height:20px;font-size:11px">${esc(M[i][0])}</span>`;
+  const total=E.reduce((s,e)=>s+e.amt,0),b=balances(T),tx=settle(b.net);
+  return `<h2>小队账本 <span class="muted">· 谁先垫钱都记下来</span></h2>
+  <div class="card">
+    ${E.length?E.map((e,k)=>`<div class="vote">${av(e.payer)}<div style="flex:1;min-width:0"><div style="font-size:14px">${esc(e.item)}</div>
+      <div class="muted" style="font-size:12px">${esc(M[e.payer])} 付 · ${e.among.length===M.length?'全员':e.among.map(i=>esc(M[i])).join('、')}分摊</div></div>
+      <b>${money(e.amt)}</b><button class="like" onclick="delExpense(${k})" title="删除">✕</button></div>`).join('')
+    :'<div class="empty" style="padding:14px 0">还没有记账。打车、门票、吃饭，谁先付了就记一笔</div>'}
+    <div class="btns"><button class="btn pri" onclick="openExpense()">＋ 记一笔</button></div>
+  </div>
+  ${E.length?`<div class="card">
+    <div class="stats" style="margin-bottom:8px"><div><b>${money(total)}</b><span class="muted">总花费</span></div><div><b>${E.length}</b><span class="muted">笔支出</span></div><div><b>${money(total/M.length)}</b><span class="muted">人均</span></div></div>
+    ${M.map((m,i)=>`<div class="vote">${av(i)}<span style="flex:1;font-size:14px">${esc(m)}</span>
+      <span class="muted" style="font-size:12px">付 ${money(b.paid[i])} / 应摊 ${money(b.owe[i])}</span>
+      <b style="min-width:64px;text-align:right;color:${b.net[i]>0?'var(--accent)':b.net[i]<0?'var(--warn)':'var(--sub)'}">${b.net[i]>0?'应收 '+money(b.net[i]):b.net[i]<0?'应付 '+money(-b.net[i]):'已平'}</b></div>`).join('')}
+    <h3 style="font-size:14px;margin:12px 0 4px">💸 怎么转最省事（${tx.length} 笔转账搞定）</h3>
+    ${T.settled?'<div class="split">✅ 本次已全部结清</div>':tx.length?tx.map(([f,t,x])=>`<div class="split">${esc(M[f])} → ${esc(M[t])}　<b>${money(x)}</b></div>`).join(''):'<div class="split">大家已经两清啦</div>'}
+    <div class="btns"><button class="btn" onclick="copySettle()">复制到群聊</button><button class="btn ${T.settled?'':'dark'}" onclick="toggleSettled()">${T.settled?'撤销结清':'标记已结清'}</button></div>
+  </div>`:''}`;
+}
+let exAmong=[];
+function openExpense(){
+  const M=S.team.members;exAmong=M.map((_,i)=>i);
+  $('sheet').innerHTML=`<h3>💰 记一笔</h3>
+  <input id="exItem" placeholder="花在哪儿，例如：打车、门票、晚饭">
+  <input id="exAmt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="金额（元）">
+  <div class="muted" style="margin-top:6px">谁付的</div>
+  <select id="exPayer">${M.map((m,i)=>`<option value="${i}" ${i===S.team.me?'selected':''}>${esc(m)}</option>`).join('')}</select>
+  <div class="muted" style="margin-top:6px">谁来分摊 <span style="font-size:12px">（没参与的点掉）</span></div>
+  <div class="chips" id="exAmong" style="margin-top:6px"></div>
+  <div class="btns"><button class="btn" onclick="closeSheet()">取消</button><button class="btn pri" onclick="addExpense()">保存</button></div>`;
+  drawAmong();$('mask').classList.add('show');
+}
+function drawAmong(){$('exAmong').innerHTML=S.team.members.map((m,i)=>`<button class="chip ${exAmong.includes(i)?'on':''}" onclick="toggleAmong(${i})">${esc(m)}</button>`).join('')}
+function toggleAmong(i){exAmong=exAmong.includes(i)?exAmong.filter(x=>x!==i):[...exAmong,i].sort();drawAmong()}
+function addExpense(){
+  const item=$('exItem').value.trim(),amt=parseFloat($('exAmt').value);
+  if(!item||!(amt>0))return toast('写上项目和金额');
+  if(!exAmong.length)return toast('至少选一个人分摊');
+  const T=S.team;(T.expenses=T.expenses||[]).push({item,amt:Math.round(amt*100)/100,payer:+$('exPayer').value,among:exAmong.slice()});
+  T.settled=false;closeSheet();render();toast('已记账，结算自动更新');
+}
+function delExpense(k){S.team.expenses.splice(k,1);S.team.settled=false;render()}
+function toggleSettled(){S.team.settled=!S.team.settled;render();toast(S.team.settled?'已标记结清':'已撤销')}
+function copySettle(){
+  const T=S.team,E=T.expenses,M=T.members,tx=settle(balances(T).net),total=E.reduce((s,e)=>s+e.amt,0);
+  const txt=`【${T.name}】周末账单\n`+E.map(e=>`· ${e.item} ${money(e.amt)}（${M[e.payer]}付）`).join('\n')+
+    `\n合计 ${money(total)}，人均 ${money(total/M.length)}\n转账：\n`+(tx.length?tx.map(([f,t,x])=>`${M[f]} → ${M[t]} ${money(x)}`).join('\n'):'已两清');
+  try{navigator.clipboard.writeText(txt)}catch(e){}
+  toast('账单已复制，发到群里吧');
 }
 function demoTeam(){
-  S.team={name:'404 宿舍周末小分队',code:'520404',members:['我','阿柚','Kiki','老周'],me:0,cands:[8,13,5],votes:{8:[1,2,3],13:[0,1],5:[2]}};
+  S.team={name:'404 宿舍周末小分队',code:'520404',members:['我','阿柚','Kiki','老周'],me:0,cands:[8,13,5],votes:{8:[1,2,3],13:[0,1],5:[2]},
+    expenses:[{item:'往返地铁+单车',amt:48,payer:0,among:[0,1,2,3]},{item:'天马山农家菜',amt:236,payer:1,among:[0,1,2,3]},{item:'下山奶茶（阿柚没喝）',amt:54,payer:2,among:[0,2,3]}]};
   render();toast('已载入示例小队');
 }
 function planBCard(a){
@@ -403,7 +474,7 @@ function setBudget(v){S.pref.budget=+v;$('bv').textContent='¥'+v;clearTimeout(s
 function setPeople(d){S.pref.people=Math.max(1,Math.min(12,S.pref.people+d));render()}
 function setSlot(k){S.pref.slot=k;render()}
 function toggleStu(){S.pref.student=!S.pref.student;render()}
-function createTeam(){S.team={name:'周末小分队',code:String(Math.floor(100000+Math.random()*900000)),members:['我'],me:0,cands:[],votes:{}};render();toast('小队已创建，把邀请码发给朋友')}
+function createTeam(){S.team={name:'周末小分队',code:String(Math.floor(100000+Math.random()*900000)),members:['我'],me:0,cands:[],votes:{},expenses:[]};render();toast('小队已创建，把邀请码发给朋友')}
 function joinTeam(){const c=prompt('输入 6 位邀请码');if(c){createTeam();S.team.code=c;S.team.members.push('阿柚','Kiki');render();toast('已加入小队')}}
 const FRIENDS=['阿柚','Kiki','老周','小林','Momo'];
 function fakeJoin(){const T=S.team,n=FRIENDS.find(f=>!T.members.includes(f));if(!n)return toast('小队已满员');T.members.push(n);
@@ -442,10 +513,10 @@ function aboutHTML(){
   <h4>👀 建议体验路径（约 2 分钟）</h4><ol class="path"><li>首页点一个示例句子，看 AI 如何理解需求并给出首推</li><li>点顶部「周日🌧️」，户外活动自动下调，室内优先</li><li>组队 → 示例小队：投票结果、AA 费用、雨天备选提醒</li><li>打卡 → 一键整理成攻略，攻略又能加入组队投票</li></ol>
   <h4>🎯 目标用户</h4><ul><li>在校大学生，周末想出门但不知道去哪，预算有限，常和室友/同学结伴</li></ul>
   <h4>😣 核心痛点</h4><ul><li>信息分散：展览、市集、演出、徒步散在不同平台</li><li>决策难：天气、预算、人数、时间都要考虑，临时变卦多</li><li>组局难：群里投票没人回，AA 算账麻烦</li><li>经验难沉淀：去过的地方没有记录，好攻略找不到</li></ul>
-  <h4>🧩 产品结构</h4><ul><li><b>发现</b>：按偏好 + 天气 + 预算 + 人数 + 时段打分推荐，给出推荐理由；雨天自动降权户外活动</li><li><b>组队</b>：邀请码建队 → 候选活动投票 → 自动生成出发计划和 AA 费用</li><li><b>打卡</b>：评分+感受，累计足迹、花费和成就徽章</li><li><b>攻略</b>：打卡一键转攻略，攻略可直接加入组队投票，形成闭环</li></ul>
+  <h4>🧩 产品结构</h4><ul><li><b>发现</b>：按偏好 + 天气 + 预算 + 人数 + 时段打分推荐，给出推荐理由；雨天自动降权户外活动</li><li><b>组队</b>：邀请码建队 → 候选活动投票 → 出发计划 → 小队账本（谁垫了钱都记下，自动算出最少几笔转账就能 AA 清）</li><li><b>打卡</b>：评分+感受，累计足迹、花费和成就徽章</li><li><b>攻略</b>：打卡一键转攻略，攻略可直接加入组队投票，形成闭环</li></ul>
   <h4>📈 关注指标</h4><ul><li>推荐点击率、加入组队率、组队成行率（投票→打卡）</li><li>打卡转攻略率、攻略带来的新组队数</li><li>周末留存（连续两周有打卡）</li></ul>
   <h4>🛠 后续迭代</h4><ul><li>一句话需求接入大模型，信息不全时主动追问（几个人？预算多少？）</li><li>接入真实活动票务与天气接口，支持预约/购票，天气变化主动推送</li><li>按小队成员各自偏好做群体推荐，减少投票分歧</li><li>人均花费计入交通，按学校位置算距离</li></ul>
-  <h4>📝 版本记录</h4><ul><li><b>v0.2</b>：一句话需求入口；雨天自动给小队备选；示例小队和示例打卡；电脑端双栏展示；可添加到手机主屏幕</li><li><b>v0.1</b>（笔试 30 分钟）：发现、组队、打卡、攻略四个模块跑通</li></ul>
+  <h4>📝 版本记录</h4><ul><li><b>v0.3</b>：小队账本。出去玩常是一个人先垫钱，事后算账麻烦、不好意思催；现在支持记录谁付了什么、谁参与分摊，自动给出最少转账方案，一键复制到群聊</li><li><b>v0.2</b>：一句话需求入口；雨天自动给小队备选；示例小队和示例打卡；电脑端双栏展示；可添加到手机主屏幕</li><li><b>v0.1</b>（笔试 30 分钟）：发现、组队、打卡、攻略四个模块跑通</li></ul>
   <p class="muted" style="margin-top:12px">注：当前为产品雏形，活动与天气为演示数据，数据只保存在你的浏览器里。</p></div>`}
 $('side').innerHTML=aboutHTML();
 render();
