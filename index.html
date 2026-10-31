@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>周末去哪儿 · 城市探索指南</title>
+<style>
+:root{
+  --bg:#f6f5f2; --card:#ffffff; --ink:#1d1d1f; --sub:#6b6b70; --line:#e7e5e0;
+  --brand:#ffc300; --brand-ink:#3a2c00; --accent:#1f7a5c; --warn:#c2410c; --rain:#2563eb;
+  --chip:#f1efea; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+.app{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:84px;position:relative}
+header{padding:18px 16px 10px;background:linear-gradient(180deg,#fff7d6,var(--bg))}
+.top{display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:800;font-size:20px;letter-spacing:.5px}
+.logo span{background:var(--brand);padding:0 6px;border-radius:6px;margin-right:4px}
+.city{font-size:13px;color:var(--sub)}
+.about-btn{font-size:12px;border:1px solid var(--line);background:#fff;padding:4px 10px;border-radius:99px}
+main{padding:0 16px}
+h2{font-size:17px;margin:18px 0 10px}
+.muted{color:var(--sub);font-size:13px}
+.card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+.weather{display:flex;gap:8px;margin-top:12px}
+.wday{flex:1;background:#fff;border:2px solid transparent;border-radius:12px;padding:10px;text-align:left;box-shadow:var(--shadow)}
+.wday.on{border-color:var(--brand)}
+.wday b{font-size:15px}
+.wday .t{font-size:22px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--chip);border-radius:99px;padding:5px 12px;font-size:13px}
+.chip.on{background:var(--ink);color:#fff}
+.row{display:flex;gap:10px;align-items:center;margin:10px 0}
+.row label{width:56px;font-size:13px;color:var(--sub);flex:none}
+.row input[type=range]{flex:1;accent-color:#d49b00}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:28px;height:28px;border-radius:50%;background:var(--chip);font-weight:700}
+.act{display:flex;gap:12px}
+.emoji{width:56px;height:56px;border-radius:12px;display:grid;place-items:center;font-size:28px;flex:none;background:#fff4cc}
+.act h3{font-size:16px}
+.meta{font-size:12px;color:var(--sub);margin-top:2px}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.tag{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--chip);color:#555}
+.tag.good{background:#e3f4ec;color:var(--accent)}
+.tag.warn{background:#fdebe1;color:var(--warn)}
+.tag.rain{background:#e3ecfd;color:var(--rain)}
+.why{margin-top:8px;font-size:12px;color:#5b4a00;background:#fff8dc;border-radius:8px;padding:6px 8px}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btn{flex:1;padding:8px 0;border-radius:10px;background:var(--chip);font-size:13px;font-weight:600}
+.btn.pri{background:var(--brand);color:var(--brand-ink)}
+.btn.dark{background:var(--ink);color:#fff}
+.score{margin-left:auto;font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--line);display:flex;padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--sub);gap:2px}
+nav button i{font-style:normal;font-size:20px}
+nav button.on{color:var(--ink);font-weight:700}
+.empty{text-align:center;color:var(--sub);padding:30px 0;font-size:14px}
+.member{display:inline-flex;align-items:center;gap:4px;background:var(--chip);border-radius:99px;padding:3px 10px 3px 3px;font-size:13px;margin:0 6px 6px 0}
+.av{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#fff;font-weight:700}
+.vote{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--line)}
+.vote:first-child{border-top:0}
+.bar{flex:1;height:6px;background:var(--chip);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brand)}
+.badges{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.badge{flex:none;width:76px;text-align:center;font-size:11px;color:var(--sub)}
+.badge div{width:52px;height:52px;margin:0 auto 4px;border-radius:50%;display:grid;place-items:center;font-size:24px;background:var(--chip);filter:grayscale(1);opacity:.5}
+.badge.got div{filter:none;opacity:1;background:#fff4cc}
+.stats{display:flex;text-align:center}
+.stats div{flex:1}
+.stats b{display:block;font-size:22px}
+.guide h3{font-size:15px}
+.guide p{font-size:13px;color:#444;margin-top:6px;white-space:pre-line}
+.like{font-size:13px;color:var(--sub)}
+.like.on{color:#e11d48}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.mask.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:480px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.sheet h3{font-size:17px;margin-bottom:10px}
+.sheet input,.sheet textarea,.sheet select{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin:6px 0;background:#fff}
+.sheet textarea{min-height:90px;resize:vertical}
+.stars button{font-size:24px;color:#ddd}
+.stars button.on{color:#f5b301}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:8px 16px;border-radius:99px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:30}
+.toast.show{opacity:1}
+.about h4{margin:12px 0 4px;font-size:14px}
+.about li{margin-left:18px;font-size:13px;color:#333}
+.seg{display:flex;background:var(--chip);border-radius:10px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;padding:6px 0;border-radius:8px;font-size:13px}
+.seg button.on{background:#fff;font-weight:700;box-shadow:var(--shadow)}
+.split{font-size:13px;margin-top:6px;color:#333}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="top">
+      <div>
+        <div class="logo"><span>周末</span>去哪儿</div>
+        <div class="city">📍 上海 · 本周末 · 为大学生精选</div>
+      </div>
+      <button class="about-btn" onclick="openAbout()">产品说明</button>
+    </div>
+    <div class="weather" id="weather"></div>
+  </header>
+  <main id="view"></main>
+  <nav id="nav"></nav>
+</div>
+
+<div class="mask" id="mask" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- 数据（演示用模拟数据） ----------
+const WEATHER = {
+  sat:{name:'周六',icon:'☀️',desc:'晴 · 体感舒适',temp:'18–25°',rain:false},
+  sun:{name:'周日',icon:'🌧️',desc:'小雨 · 午后转阴',temp:'15–19°',rain:true}
+};
+const TYPES = [
+  {k:'exhibit',n:'展览',e:'🖼️'},{k:'market',n:'市集',e:'🛍️'},{k:'show',n:'演出',e:'🎸'},
+  {k:'hike',n:'徒步',e:'🥾'},{k:'food',n:'美食',e:'🍜'},{k:'sport',n:'运动',e:'🏓'}
+];
+const ACTS = [
+  {id:1,n:'西岸美术馆 · 光影特展',t:'exhibit',in:true,p:0,stu:true,d:'徐汇滨江',h:2,slot:['am','pm'],g:[1,6],crowd:'中',book:true,tip:'学生证免票，需提前一天预约'},
+  {id:2,n:'M50 创意园开放工作室',t:'exhibit',in:true,p:0,d:'普陀',h:2,slot:['pm'],g:[1,8],crowd:'低',book:false,tip:'适合拍照，周末部分画廊闭馆'},
+  {id:3,n:'上海博物馆东馆 · 古埃及展',t:'exhibit',in:true,p:100,stu:true,d:'浦东',h:3,slot:['am','pm'],g:[1,6],crowd:'高',book:true,tip:'学生半价 50 元，周末建议上午入场'},
+  {id:4,n:'安福路周末设计市集',t:'market',in:false,p:30,d:'徐汇',h:2,slot:['pm'],g:[1,8],crowd:'高',book:false,tip:'现场消费人均约 30 元，下雨可能取消'},
+  {id:5,n:'愚园路复古唱片市集',t:'market',in:true,p:20,d:'长宁',h:2,slot:['pm','eve'],g:[1,6],crowd:'中',book:false,tip:'室内场地，雨天照常'},
+  {id:6,n:'Livehouse 独立乐队专场',t:'show',in:true,p:120,stu:true,d:'静安',h:2.5,slot:['eve'],g:[1,6],crowd:'中',book:true,tip:'学生票 80 元，需在开演前 2 天购票'},
+  {id:7,n:'大学生即兴喜剧开放麦',t:'show',in:true,p:40,d:'黄浦',h:1.5,slot:['eve'],g:[1,8],crowd:'中',book:true,tip:'可报名上台，适合破冰'},
+  {id:8,n:'佘山森林步道半日徒步',t:'hike',in:false,p:25,d:'松江',h:4,slot:['am'],g:[2,10],crowd:'低',book:false,tip:'地铁 9 号线可达，雨后湿滑'},
+  {id:9,n:'滨江 22 公里骑行/慢跑',t:'hike',in:false,p:15,d:'杨浦→徐汇',h:3,slot:['am','pm'],g:[1,10],crowd:'中',book:false,tip:'共享单车即可，日落时段最好看'},
+  {id:10,n:'朱家角古镇短途游',t:'hike',in:false,p:60,d:'青浦',h:6,slot:['am'],g:[2,8],crowd:'高',book:false,tip:'人均交通+餐饮约 60 元'},
+  {id:11,n:'定西路小吃 Citywalk',t:'food',in:false,p:50,d:'长宁',h:2,slot:['pm','eve'],g:[2,6],crowd:'中',book:false,tip:'人越多越划算，可以分着吃'},
+  {id:12,n:'云南路室内美食探店',t:'food',in:true,p:70,d:'黄浦',h:2,slot:['pm','eve'],g:[2,6],crowd:'高',book:false,tip:'雨天备选，热门店需排队'},
+  {id:13,n:'室内攀岩体验课',t:'sport',in:true,p:98,stu:true,d:'静安',h:2,slot:['am','pm'],g:[1,6],crowd:'低',book:true,tip:'学生价 78 元，含教练'},
+  {id:14,n:'城市飞盘新手局',t:'sport',in:false,p:35,d:'徐汇',h:2,slot:['am','pm'],g:[4,12],crowd:'中',book:true,tip:'4 人起组局，雨天取消'},
+  {id:15,n:'桌游剧本杀（大学生专场）',t:'sport',in:true,p:68,d:'杨浦',h:4,slot:['pm','eve'],g:[4,8],crowd:'中',book:true,tip:'需要凑满 4–8 人'},
+  {id:16,n:'上海图书馆东馆 · 读书角',t:'exhibit',in:true,p:0,d:'浦东',h:3,slot:['am','pm'],g:[1,4],crowd:'低',book:false,tip:'免费，适合预算紧张的周末'}
+];
+const SLOTS = {am:'上午',pm:'下午',eve:'晚上'};
+const COLORS = ['#f59e0b','#10b981','#3b82f6','#ec4899','#8b5cf6','#ef4444'];
+const BADGES = [
+  {k:'first',e:'🚩',n:'首次打卡',ok:s=>s.checkins.length>=1},
+  {k:'art',e:'🖼️',n:'看展达人',ok:s=>s.checkins.filter(c=>typeOf(c.aid)==='exhibit').length>=2},
+  {k:'out',e:'🌿',n:'户外玩家',ok:s=>s.checkins.some(c=>!byId(c.aid).in)},
+  {k:'team',e:'🤝',n:'组队出发',ok:s=>s.checkins.some(c=>c.team)},
+  {k:'save',e:'💰',n:'省钱高手',ok:s=>s.checkins.some(c=>effPrice(byId(c.aid))===0)},
+  {k:'share',e:'✍️',n:'攻略作者',ok:s=>s.guides.some(g=>g.mine)}
+];
+
+// ---------- 状态 ----------
+const DEFAULT = {
+  tab:'discover', day:'sat',
+  pref:{types:['exhibit','market','food'],budget:80,people:3,slot:'pm',student:true},
+  team:null, checkins:[], liked:[], guides:[
+    {id:'g1',aid:8,title:'佘山半日徒步：不累也能出片',by:'阿柚',likes:126,body:'9 号线佘山站出来扫单车 10 分钟到入口。\n走东佘山环线约 2 小时，难度低。\n下山去天马山吃农家菜，4 人 AA 人均 35。'},
+    {id:'g2',aid:1,title:'西岸美术馆学生免票攻略',by:'Kiki',likes:89,body:'前一天晚上 8 点在小程序放票，带学生证。\n看完沿滨江走到龙美术馆，日落刚好。'},
+    {id:'g3',aid:15,title:'6 人剧本杀怎么选本不踩雷',by:'老周',likes:54,body:'新手选欢乐本或机制本，别选硬核推理。\n提前在群里投票定本，现场少纠结 30 分钟。'}
+  ]
+};
+let S;
+try{S=Object.assign({},DEFAULT,JSON.parse(localStorage.getItem('wg-state')||'{}'))}catch(e){S=structuredClone(DEFAULT)}
+function save(){try{localStorage.setItem('wg-state',JSON.stringify(S))}catch(e){}}
+
+// ---------- 工具 ----------
+const $=id=>document.getElementById(id);
+const byId=id=>ACTS.find(a=>a.id===id);
+const typeOf=id=>byId(id).t;
+const typeInfo=k=>TYPES.find(t=>t.k===k);
+const effPrice=a=>a.stu&&S.pref.student?Math.round(a.p*(a.id===6?0.67:a.id===13?0.8:a.id===1?0:0.5)):a.p;
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1600)}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+// ---------- 推荐逻辑 ----------
+function recommend(){
+  const w=WEATHER[S.day], P=S.pref;
+  return ACTS.map(a=>{
+    const price=effPrice(a); let score=35; const why=[], flags=[];
+    if(P.types.includes(a.t)){score+=20;why.push('符合你选的「'+typeInfo(a.t).n+'」')}
+    if(price<=P.budget){score+=15;why.push(price===0?'免费':'人均 ¥'+price+'，在预算内')}
+    else{score-=40;flags.push(['warn','超预算 ¥'+(price-P.budget)])}
+    if(w.rain&&!a.in){score-=35;flags.push(['rain','下雨不推荐'])}
+    if(w.rain&&a.in){score+=10;why.push('室内，不受小雨影响')}
+    if(!w.rain&&!a.in){score+=8;why.push('天气晴好，适合户外')}
+    if(P.people>=a.g[0]&&P.people<=a.g[1]){score+=8;if(P.people>=3)why.push(P.people+' 人同行刚好')}
+    else{score-=15;flags.push(['warn',a.g[0]+'–'+a.g[1]+' 人适合'])}
+    if(a.slot.includes(P.slot)){score+=7}else{score-=10;flags.push(['', '更适合'+a.slot.map(s=>SLOTS[s]).join('/')])}
+    score+=a.crowd==='低'?4:a.crowd==='中'?2:0;
+    if(price<=P.budget/2)score+=3;
+    if(a.crowd==='高')flags.push(['','人多，建议早到'])
+    if(a.book)flags.push(['','需预约'])
+    return {a,price,score:Math.max(0,Math.min(99,score)),why,flags};
+  }).sort((x,y)=>y.score-x.score);
+}
+
+// ---------- 视图 ----------
+function renderWeather(){
+  $('weather').innerHTML=Object.entries(WEATHER).map(([k,w])=>`
+    <button class="wday ${S.day===k?'on':''}" onclick="setDay('${k}')">
+      <div class="t">${w.icon}</div><b>${w.name}</b> <span class="muted">${w.temp}</span>
+      <div class="muted">${w.desc}</div></button>`).join('');
+}
+function renderNav(){
+  const tabs=[['discover','🧭','发现'],['team','👥','组队'],['checkin','📍','打卡'],['guide','📖','攻略']];
+  $('nav').innerHTML=tabs.map(([k,i,n])=>`<button class="${S.tab===k?'on':''}" onclick="go('${k}')"><i>${i}</i>${n}</button>`).join('');
+}
+function viewDiscover(){
+  const P=S.pref, w=WEATHER[S.day], list=recommend();
+  const good=list.filter(r=>r.score>=55).slice(0,6), rest=list.filter(r=>r.score<55);
+  return `
+  <h2>我的偏好</h2>
+  <div class="card">
+    <div class="chips">${TYPES.map(t=>`<button class="chip ${P.types.includes(t.k)?'on':''}" onclick="toggleType('${t.k}')">${t.e} ${t.n}</button>`).join('')}</div>
+    <div class="row"><label>人均预算</label><input type="range" min="0" max="200" step="10" value="${P.budget}" oninput="setBudget(this.value)"><b id="bv">¥${P.budget}</b></div>
+    <div class="row"><label>同行人数</label><div class="stepper"><button onclick="setPeople(-1)">−</button><b>${P.people} 人</b><button onclick="setPeople(1)">+</button></div></div>
+    <div class="row"><label>时间段</label><div class="chips">${Object.entries(SLOTS).map(([k,n])=>`<button class="chip ${P.slot===k?'on':''}" onclick="setSlot('${k}')">${n}</button>`).join('')}</div></div>
+    <div class="row"><label>学生证</label><button class="chip ${P.student?'on':''}" onclick="toggleStu()">${P.student?'✓ 已开启学生优惠':'未开启'}</button></div>
+  </div>
+  <h2>${w.name}${w.icon} 为你推荐 <span class="muted">· ${good.length} 个</span></h2>
+  ${w.rain?'<div class="card muted">🌧️ '+w.name+'有小雨，已优先推荐室内活动，户外活动已下调。</div>':''}
+  ${good.length?good.map(card).join(''):'<div class="empty">没有完全匹配的活动，试试放宽预算或多选几个类型</div>'}
+  ${rest.length?`<h2 class="muted">不太合适（${rest.length}）</h2>`+rest.slice(0,4).map(r=>card(r,true)).join(''):''}`;
+}
+function card(r,dim){
+  const a=r.a, ti=typeInfo(a.t), inTeam=S.team&&S.team.cands.includes(a.id);
+  return `<div class="card" style="${dim?'opacity:.6':''}">
+    <div class="act"><div class="emoji">${ti.e}</div>
+      <div style="flex:1;min-width:0"><div style="display:flex;gap:6px"><h3>${a.n}</h3><span class="score">${r.score}分</span></div>
+      <div class="meta">${a.d} · ${a.h} 小时 · ${a.in?'室内':'户外'} · ${r.price===0?'免费':'人均 ¥'+r.price}${a.stu&&S.pref.student&&r.price<a.p?' <s>¥'+a.p+'</s>':''}</div>
+      <div class="tags">${r.flags.map(([c,t])=>`<span class="tag ${c}">${t}</span>`).join('')}</div></div></div>
+    ${!dim&&r.why.length?`<div class="why">💡 推荐理由：${r.why.join('；')}</div>`:''}
+    <div class="muted" style="margin-top:6px;font-size:12px">📝 ${a.tip}</div>
+    ${dim?'':`<div class="btns"><button class="btn" onclick="addToTeam(${a.id})">${inTeam?'✓ 已加入组队投票':'＋ 加入组队投票'}</button><button class="btn pri" onclick="openCheckin(${a.id})">去打卡</button></div>`}
+  </div>`;
+}
+function viewTeam(){
+  if(!S.team) return `<h2>组队出发</h2>
+    <div class="card"><p>一个人纠结，几个人更纠结 😵‍💫</p>
+    <p class="muted" style="margin-top:6px">创建小队 → 把候选活动加进来 → 大家投票 → 自动算好 AA 费用和集合安排。</p>
+    <div class="btns"><button class="btn pri" onclick="createTeam()">创建本周末小队</button><button class="btn" onclick="joinTeam()">输入邀请码加入</button></div></div>`;
+  const T=S.team, total=T.members.length;
+  const cands=T.cands.map(id=>({a:byId(id),v:T.votes[id]||[]})).sort((x,y)=>y.v.length-x.v.length);
+  const win=cands[0]&&cands[0].v.length?cands[0]:null;
+  return `<h2>${esc(T.name)} <span class="muted">· 邀请码 ${T.code}</span></h2>
+  <div class="card">
+    <div>${T.members.map((m,i)=>`<span class="member"><span class="av" style="background:${COLORS[i%6]}">${esc(m[0])}</span>${esc(m)}</span>`).join('')}</div>
+    <div class="btns"><button class="btn" onclick="copyCode()">复制邀请码</button><button class="btn" onclick="fakeJoin()">模拟好友加入</button></div>
+  </div>
+  <h2>投票选活动 <span class="muted">· 你当前以「${esc(T.members[T.me])}」投票</span></h2>
+  <div class="card">
+    ${cands.length?cands.map(c=>`<div class="vote"><span>${typeInfo(c.a.t).e}</span><div style="flex:1"><div style="font-size:14px">${c.a.n}</div><div class="bar"><i style="width:${total?c.v.length/total*100:0}%"></i></div></div>
+      <span class="muted">${c.v.length}/${total}</span><button class="chip ${c.v.includes(T.me)?'on':''}" onclick="vote(${c.a.id})">${c.v.includes(T.me)?'已投':'投票'}</button></div>`).join('')
+    :'<div class="empty">还没有候选活动，去「发现」页点「加入组队投票」</div>'}
+    ${total>1?`<div class="btns"><button class="btn" onclick="switchMe()">切换投票人（演示）</button></div>`:''}
+  </div>
+  ${win?`<h2>出发计划</h2><div class="card">
+    <b>🏆 ${win.a.n}</b>
+    <div class="split">📅 ${WEATHER[S.day].name} ${SLOTS[S.pref.slot]} · ${win.a.d}</div>
+    <div class="split">💰 预计总花费 ¥${effPrice(win.a)*total}，${total} 人 AA，每人 ¥${effPrice(win.a)}</div>
+    <div class="split">${WEATHER[S.day].rain&&!win.a.in?'⚠️ 当天有雨，建议改投室内活动或准备雨具':'✅ 天气合适'}${win.a.book?' · ⏰ 记得提前预约':''}</div>
+    <div class="btns"><button class="btn pri" onclick="openCheckin(${win.a.id},true)">到达后一键打卡</button><button class="btn" onclick="leaveTeam()">解散小队</button></div></div>`:''}`;
+}
+function viewCheckin(){
+  const C=S.checkins, spent=C.reduce((s,c)=>s+effPrice(byId(c.aid)),0);
+  return `<h2>我的周末足迹</h2>
+  <div class="card stats"><div><b>${C.length}</b><span class="muted">次打卡</span></div><div><b>${new Set(C.map(c=>byId(c.aid).d)).size}</b><span class="muted">个区域</span></div><div><b>¥${spent}</b><span class="muted">累计花费</span></div></div>
+  <h2>成就徽章</h2>
+  <div class="card"><div class="badges">${BADGES.map(b=>`<div class="badge ${b.ok(S)?'got':''}"><div>${b.e}</div>${b.n}</div>`).join('')}</div></div>
+  <h2>打卡记录</h2>
+  ${C.length?C.slice().reverse().map(c=>{const a=byId(c.aid);return `<div class="card"><div class="act"><div class="emoji">${typeInfo(a.t).e}</div><div style="flex:1">
+    <h3>${a.n}</h3><div class="meta">${c.date} · ${'★'.repeat(c.rating)}${'☆'.repeat(5-c.rating)}${c.team?' · 👥 组队':''}</div>
+    ${c.note?`<p style="font-size:13px;margin-top:6px">${esc(c.note)}</p>`:''}</div></div>
+    <div class="btns"><button class="btn" onclick="openGuide(${c.aid},'${esc(c.note||'')}')">✍️ 整理成攻略分享</button></div></div>`}).join('')
+  :'<div class="empty">还没有打卡，去「发现」页挑一个活动出发吧</div>'}`;
+}
+function viewGuide(){
+  const sort=S.gsort||'hot';
+  const list=S.guides.slice().sort((a,b)=>sort==='hot'?b.likes-a.likes:(b.mine?1:0)-(a.mine?1:0));
+  return `<h2>攻略分享</h2>
+  <div class="seg"><button class="${sort==='hot'?'on':''}" onclick="S.gsort='hot';render()">最热</button><button class="${sort==='mine'?'on':''}" onclick="S.gsort='mine';render()">我的</button></div>
+  <button class="btn dark" style="width:100%;margin-bottom:12px;padding:10px" onclick="openGuide()">＋ 写一篇攻略</button>
+  ${list.map(g=>{const a=byId(g.aid),on=S.liked.includes(g.id);return `<div class="card guide">
+    <div class="tags"><span class="tag">${typeInfo(a.t).e} ${a.n}</span>${g.mine?'<span class="tag good">我写的</span>':''}</div>
+    <h3 style="margin-top:6px">${esc(g.title)}</h3><p>${esc(g.body)}</p>
+    <div style="display:flex;justify-content:space-between;margin-top:8px"><span class="muted">@${esc(g.by)}</span>
+    <button class="like ${on?'on':''}" onclick="like('${g.id}')">${on?'♥':'♡'} ${g.likes+(on?1:0)}</button></div>
+    <div class="btns"><button class="btn" onclick="addToTeam(${a.id})">＋ 加入组队投票</button></div></div>`}).join('')}`;
+}
+
+// ---------- 交互 ----------
+function render(){renderWeather();renderNav();
+  $('view').innerHTML={discover:viewDiscover,team:viewTeam,checkin:viewCheckin,guide:viewGuide}[S.tab]();save()}
+function go(t){S.tab=t;render();scrollTo(0,0)}
+function setDay(d){S.day=d;render()}
+function toggleType(k){const t=S.pref.types;S.pref.types=t.includes(k)?t.filter(x=>x!==k):[...t,k];render()}
+function setBudget(v){S.pref.budget=+v;$('bv').textContent='¥'+v;clearTimeout(setBudget._h);setBudget._h=setTimeout(render,250)}
+function setPeople(d){S.pref.people=Math.max(1,Math.min(12,S.pref.people+d));render()}
+function setSlot(k){S.pref.slot=k;render()}
+function toggleStu(){S.pref.student=!S.pref.student;render()}
+function createTeam(){S.team={name:'周末小分队',code:String(Math.floor(100000+Math.random()*900000)),members:['我'],me:0,cands:[],votes:{}};render();toast('小队已创建，把邀请码发给朋友')}
+function joinTeam(){const c=prompt('输入 6 位邀请码');if(c){createTeam();S.team.code=c;S.team.members.push('阿柚','Kiki');render();toast('已加入小队')}}
+const FRIENDS=['阿柚','Kiki','老周','小林','Momo'];
+function fakeJoin(){const T=S.team,n=FRIENDS.find(f=>!T.members.includes(f));if(!n)return toast('小队已满员');T.members.push(n);
+  T.cands.forEach(id=>{if(Math.random()>.45)(T.votes[id]=T.votes[id]||[]).push(T.members.length-1)});render();toast(n+' 加入了小队')}
+function switchMe(){S.team.me=(S.team.me+1)%S.team.members.length;render()}
+function copyCode(){try{navigator.clipboard.writeText('来和我组队周末出发！邀请码 '+S.team.code)}catch(e){}toast('邀请码已复制')}
+function leaveTeam(){if(confirm('确定解散小队？')){S.team=null;render()}}
+function addToTeam(id){if(!S.team)createTeam();const T=S.team;if(!T.cands.includes(id)){T.cands.push(id);toast('已加入组队投票')}else toast('已经在投票列表里');render()}
+function vote(id){const v=S.team.votes[id]=S.team.votes[id]||[],m=S.team.me;const i=v.indexOf(m);i>=0?v.splice(i,1):v.push(m);render()}
+function like(id){const i=S.liked.indexOf(id);i>=0?S.liked.splice(i,1):S.liked.push(id);render()}
+
+let ck={};
+function openCheckin(id,team){ck={id,rating:5,team:!!team};const a=byId(id);
+  $('sheet').innerHTML=`<h3>📍 打卡 · ${a.n}</h3><div class="stars" id="stars"></div>
+  <textarea id="note" placeholder="说说感受：值不值得去？有什么坑？（会帮你一键生成攻略）"></textarea>
+  <label class="muted"><input type="checkbox" id="ckteam" ${team?'checked':''} style="width:auto"> 和小队一起来的</label>
+  <div class="btns"><button class="btn" onclick="closeSheet()">取消</button><button class="btn pri" onclick="doCheckin()">完成打卡</button></div>`;
+  drawStars();$('mask').classList.add('show')}
+function drawStars(){$('stars').innerHTML=[1,2,3,4,5].map(i=>`<button class="${i<=ck.rating?'on':''}" onclick="ck.rating=${i};drawStars()">★</button>`).join('')}
+function doCheckin(){const d=new Date();S.checkins.push({aid:ck.id,rating:ck.rating,note:$('note').value.trim(),team:$('ckteam').checked,date:(d.getMonth()+1)+'月'+d.getDate()+'日'});
+  const before=BADGES.filter(b=>b.ok({...S,checkins:S.checkins.slice(0,-1)})).length,after=BADGES.filter(b=>b.ok(S)).length;
+  closeSheet();S.tab='checkin';render();toast(after>before?'🎉 打卡成功，解锁新徽章！':'打卡成功')}
+function openGuide(aid,note){
+  $('sheet').innerHTML=`<h3>✍️ 写攻略</h3>
+  <select id="gaid">${ACTS.map(a=>`<option value="${a.id}" ${a.id===aid?'selected':''}>${a.n}</option>`).join('')}</select>
+  <input id="gtitle" placeholder="标题，例如：雨天也能玩的室内展" value="${aid?esc(byId(aid).n)+' 实测攻略':''}">
+  <textarea id="gbody" placeholder="交通怎么去 / 花了多少钱 / 几个人去合适 / 避坑提醒">${note?esc(note)+'\n':''}${aid?'💰 人均：¥'+effPrice(byId(aid))+'\n🚇 交通：\n⚠️ 避坑：':''}</textarea>
+  <div class="btns"><button class="btn" onclick="closeSheet()">取消</button><button class="btn pri" onclick="doGuide()">发布</button></div>`;
+  $('mask').classList.add('show')}
+function doGuide(){const t=$('gtitle').value.trim(),b=$('gbody').value.trim();if(!t||!b)return toast('标题和内容都要写哦');
+  S.guides.unshift({id:'m'+Date.now(),aid:+$('gaid').value,title:t,body:b,by:'我',likes:0,mine:true});closeSheet();S.tab='guide';render();toast('攻略已发布')}
+function closeSheet(){$('mask').classList.remove('show')}
+function openAbout(){
+  $('sheet').innerHTML=`<div class="about"><h3>产品说明</h3>
+  <h4>🎯 目标用户</h4><ul><li>在校大学生，周末想出门但不知道去哪，预算有限，常和室友/同学结伴</li></ul>
+  <h4>😣 核心痛点</h4><ul><li>信息分散：展览、市集、演出、徒步散在不同平台</li><li>决策难：天气、预算、人数、时间都要考虑，临时变卦多</li><li>组局难：群里投票没人回，AA 算账麻烦</li><li>经验难沉淀：去过的地方没有记录，好攻略找不到</li></ul>
+  <h4>🧩 产品结构</h4><ul><li><b>发现</b>：按偏好 + 天气 + 预算 + 人数 + 时段打分推荐，给出推荐理由；雨天自动降权户外活动</li><li><b>组队</b>：邀请码建队 → 候选活动投票 → 自动生成出发计划和 AA 费用</li><li><b>打卡</b>：评分+感受，累计足迹、花费和成就徽章</li><li><b>攻略</b>：打卡一键转攻略，攻略可直接加入组队投票，形成闭环</li></ul>
+  <h4>📈 关注指标</h4><ul><li>推荐点击率、加入组队率、组队成行率（投票→打卡）</li><li>打卡转攻略率、攻略带来的新组队数</li><li>周末留存（连续两周有打卡）</li></ul>
+  <h4>🛠 后续迭代</h4><ul><li>接入真实活动票务与天气接口，支持预约/购票</li><li>自然语言描述需求（“4 个人、下雨、100 以内”）直接出方案</li><li>根据小队成员偏好做群体推荐，减少投票分歧</li></ul>
+  <p class="muted" style="margin-top:12px">注：当前为产品雏形，活动与天气为演示数据，数据保存在本机浏览器。</p></div>
+  <div class="btns"><button class="btn pri" onclick="closeSheet()">知道了</button></div>`;
+  $('mask').classList.add('show')}
+render();
+</script>
+</body>
+</html>
